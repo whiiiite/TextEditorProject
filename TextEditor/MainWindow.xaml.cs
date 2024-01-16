@@ -19,6 +19,8 @@ using System.Reflection.Metadata;
 using System.Windows.Markup;
 using System.ComponentModel;
 using System.Windows.Data;
+using TextEditor.Util;
+using TextEditor.FileSystem;
 
 namespace TextEditor
 {
@@ -33,6 +35,8 @@ namespace TextEditor
         private FlowDocument flowDocument;
         private RichTextBox currentRichTextBox;
         public event PropertyChangedEventHandler PropertyChanged;
+        Binding binding = new Binding("Scale");
+       
 
         protected virtual void OnPropertyChanged(string propertyName)
         {
@@ -58,13 +62,13 @@ namespace TextEditor
             InitializeDocument();
             richTextBox.IsEnabled = false;
             richTextBox.Visibility = Visibility.Collapsed;
-            PopulateSystemFonts();
-            PopulateFontSizes();
-            PopulateColors();
-            PopulateBackgroundColors();
+            Populator.PopulateSystemFonts(FontComboBox);
+            Populator.PopulateFontSizes(FontSizeComboBox);
+            Populator.PopulateColors(ColorComboBox);
+            Populator.PopulateBackgroundColors(BackgroundColorComboBox);
             UpdateMainWindowTitle();
             richTextBox.TextChanged += RichTextBox_TextChanged;
-            Binding binding = new Binding("Scale");
+            //Binding binding = new Binding("Scale");
             binding.Source = this;
             scaleSlider.SetBinding(Slider.ValueProperty, binding);
             scaleSlider.ValueChanged += ScaleSlider_ValueChanged;
@@ -79,7 +83,7 @@ namespace TextEditor
         }
         private void UpdateScaleValueLabel()
         {
-            scaleValueLabel.Text = $"{Scale*100:F0}";
+            scaleValueLabel.Text = $"{Scale*100:F0}%";
         }
 
         private void ApplyScale()
@@ -135,58 +139,6 @@ namespace TextEditor
         }
 
 
-        private void PopulateSystemFonts()
-        {
-            // Получаем список системных шрифтов и добавляем их в FontComboBox
-            foreach (FontFamily fontFamily in Fonts.SystemFontFamilies)
-            {
-                ComboBoxItem item = new ComboBoxItem();
-                item.Content = fontFamily.Source;
-                FontComboBox.Items.Add(item);
-            }
-            FontComboBox.SelectedIndex = 2;
-        }
-
-        private void PopulateFontSizes()
-        {
-            // Заполняем ComboBox системными размерами шрифта
-            for (int i = 6; i <= 48; i += 2)
-            {
-                ComboBoxItem item = new ComboBoxItem();
-                item.Content = i;
-                FontSizeComboBox.Items.Add(item);
-            }
-            FontSizeComboBox.SelectedIndex = 6;
-        }
-
-        private void PopulateColors()
-        {
-            ColorComboBox.Items.Add(Colors.Black);
-            ColorComboBox.Items.Add(Colors.Red);
-            ColorComboBox.Items.Add(Colors.Blue);
-            ColorComboBox.Items.Add(Colors.Green);
-            ColorComboBox.Items.Add(Colors.Orange);
-            ColorComboBox.Items.Add(Colors.Yellow);
-            ColorComboBox.Items.Add(Colors.DarkBlue);
-            ColorComboBox.Items.Add(Colors.Violet);
-            ColorComboBox.Items.Add(Colors.White);
-            ColorComboBox.SelectedIndex = 0;
-        }
-
-        private void PopulateBackgroundColors()
-        {
-            BackgroundColorComboBox.Items.Add(Colors.White);
-            BackgroundColorComboBox.Items.Add(Colors.Black);
-            BackgroundColorComboBox.Items.Add(Colors.Red);
-            BackgroundColorComboBox.Items.Add(Colors.Blue);
-            BackgroundColorComboBox.Items.Add(Colors.Green);
-            BackgroundColorComboBox.Items.Add(Colors.Orange);
-            BackgroundColorComboBox.Items.Add(Colors.Yellow);
-            BackgroundColorComboBox.Items.Add(Colors.DarkBlue);
-            BackgroundColorComboBox.Items.Add(Colors.Violet);
-            BackgroundColorComboBox.SelectedIndex = 0;
-            //}
-        }
         private void UpdateMainWindowTitle()
         {
             // Формируйте заголовок окна с учетом текущего имени файла
@@ -231,190 +183,23 @@ namespace TextEditor
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            SaveDocument(sender, e);
+            DocumentsHandler.SaveDocument(sender, e, currentFileName, richTextBox);
         }
 
         private void SaveAs_Click(object sender, RoutedEventArgs e)
         {
-            SaveDocumentAs(sender, e);
+            currentFileName = DocumentsHandler.SaveDocumentAs(currentFileName, richTextBox);
+            UpdateMainWindowTitle();
         }
 
 
         private void Open_Click(object sender, RoutedEventArgs e) //LoadDocument(string filePath)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                string fileExtension = System.IO.Path.GetExtension(openFileDialog.FileName).ToLower();
-
-                try
-                {
-                    switch (fileExtension)
-                    {
-                        case ".txt":
-                            OpenTextFile(openFileDialog.FileName);
-                            break;
-                        case ".rtf":
-                            OpenRtfFile(openFileDialog.FileName);
-                            break;
-                        case ".pdf":
-                            //OpenPdfFile(openFileDialog.FileName);
-                            break;
-                        default:
-                            MessageBox.Show("Unsupported file format.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            break;
-                    }
-                    richTextBox.IsEnabled = true;
-                    richTextBox.Visibility = Visibility.Visible;
-                    UpdateMainWindowTitle();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
+            currentFileName = DocumentsHandler.Open(richTextBox, currentFileName);
+            MessageBox.Show(currentFileName);
+            UpdateMainWindowTitle();
         }
 
-        private void OpenTextFile(string filePath)
-        {
-            string content = File.ReadAllText(filePath);
-            richTextBox.Document = new FlowDocument(new Paragraph(new Run(content)));
-            currentFileName = filePath;
-        }
-
-        private void OpenRtfFile(string filePath)
-        {
-            TextRange range = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
-            using (FileStream fs = new FileStream(filePath, FileMode.Open))
-            {
-                range.Load(fs, DataFormats.Rtf);
-            }
-            currentFileName = filePath;
-        }
-
-        //private void OpenPdfFile(string filePath)
-        //{
-        //    if (File.Exists(filePath))
-        //    {
-        //        var pdfViewer = new PdfViewer();
-        //        pdfViewer.Load(filePath);
-        //        windowsFormsHost.Child = pdfViewer;
-        //    }
-        //    currentFileName = filePath;
-        //}
-
-        //private void Save_Click(object sender, RoutedEventArgs e)
-        //{
-        private void SaveDocument(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(currentFileName) && currentFileName!="Новий документ.")
-            {
-                try
-                {
-                    string fileExtension = System.IO.Path.GetExtension(currentFileName).ToLower();
-
-                    switch (fileExtension)
-                    {
-                        case ".txt":
-                            SaveTextFile(currentFileName);
-                            break;
-                        case ".rtf":
-                            SaveRtfFile(currentFileName);
-                            break;
-                        case ".pdf":
-                            SavePdfFile(currentFileName);
-                            break;
-                        default:
-                            MessageBox.Show("Unsupported file format.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            else
-            {
-                SaveAs_Click(sender, e);
-            }
-        }
-
-        private void SaveTextFile(string filePath)
-        {
-            string content = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
-            File.WriteAllText(filePath, content);
-        }
-
-        private void SaveRtfFile(string filePath)
-        {
-            TextRange range = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
-            using (FileStream fs = new FileStream(filePath, FileMode.Create))
-            {
-                range.Save(fs, DataFormats.Rtf);
-            }
-        }
-        private void SavePdfFile(string filePath)
-        {
-            //PdfSharp.Pdf.PdfDocument pdfDocument = new PdfSharp.Pdf.PdfDocument();
-            //PdfPage pdfPage = pdfDocument.AddPage();
-            //XGraphics gfx = XGraphics.FromPdfPage(pdfPage);
-            //XTextFormatter tf = new XTextFormatter(gfx);
-
-            //string content = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
-            //tf.DrawString(content, new XFont("Arial", 12), XBrushes.Black, new XRect(10, 10, pdfPage.Width.Point, pdfPage.Height.Point), XStringFormats.TopLeft);
-
-            //pdfDocument.Save(filePath);
-        }
- 
-        private void SaveDocumentAs(object sender, RoutedEventArgs e)
-        {
-                SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Text files (*.txt)|*.txt|Rich Text Format (*.rtf)|*.rtf|All files (*.*)|*.*";
-
-            if (!string.IsNullOrEmpty(currentFileName))
-            {
-                saveFileDialog.FileName = currentFileName;
-            }
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                try
-                {
-                    string filePath = saveFileDialog.FileName;
-                    string content = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
-
-                    // Определение выбранного формата
-                    string fileExtension = System.IO.Path.GetExtension(filePath);
-
-                    if (fileExtension.Equals(".txt", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Сохранение в формате txt
-                        File.WriteAllText(filePath, content);
-                    }
-                    else if (fileExtension.Equals(".rtf", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Сохранение в формате rtf
-                        TextRange range = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
-                        using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            range.Save(fileStream, DataFormats.Rtf);
-                        }
-                    }
-                    else if (fileExtension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                    {
-
-                    }
-
-                    currentFileName = filePath; // Обновляем текущее имя файла
-                    UpdateMainWindowTitle();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             richTextBox.Document = new FlowDocument(); // Очищаем содержимое RichTextBox
@@ -548,11 +333,6 @@ namespace TextEditor
                     : delta);
             }
         }
-        private void InsertImage_Click(object sender, RoutedEventArgs e)
-        {
-            // Implement image insertion logic
-        }
-
         private void ApplyToSelection(DependencyProperty property, object value)
         {
             TextRange selection = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
@@ -660,6 +440,11 @@ namespace TextEditor
             richTextBox.CaretPosition = insertionPosition;
         }
 
+        private void InsertImage_Click(object sender, RoutedEventArgs e)
+        {
+ 
+        }
+
         private void alignLeft_Click(object sender, RoutedEventArgs e)
         {
 
@@ -717,6 +502,18 @@ namespace TextEditor
                 richTextBox.Document.PageWidth = 595;
                 richTextBox.Document.PageHeight = 842;
             }
+        }
+
+        private void zoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            Scale -= 0.01;
+            scaleSlider.SetBinding(Slider.ValueProperty, binding);
+        }
+
+        private void zoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+            Scale += 0.01;
+            scaleSlider.SetBinding(Slider.ValueProperty, binding);
         }
     }
 }

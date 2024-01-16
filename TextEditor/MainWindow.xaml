@@ -59,28 +59,28 @@
             </MenuItem>
         </Menu>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Grid x:Name="Font" RenderTransformOrigin="2.5,0.5" UseLayoutRounding="False" Height="40">
+            <Grid x:Name="Font" RenderTransformOrigin="2.5,0.5" UseLayoutRounding="False" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Label Content="Font" Height="17" FontSize="10" Margin="2,1,2,0" Padding="2,2,5,0"/>
+                <Label Content="Font" Height="17" FontSize="10" Margin="2,1,2,2" Padding="2,2,5,2"/>
 
-                <ComboBox x:Name="FontComboBox" Grid.Row="1" Margin="2,0,44,2" VerticalAlignment="Bottom" Height="17" Padding="2,1,2,0" ScrollViewer.CanContentScroll="True" SelectionChanged="FontComboBox_SelectionChanged" FontSize="10">
+                <ComboBox x:Name="FontComboBox" Grid.Row="1" Margin="2,0,44,3" VerticalAlignment="Bottom" Height="17" Padding="2,1,2,1" ScrollViewer.CanContentScroll="True" SelectionChanged="FontComboBox_SelectionChanged" FontSize="10">
                 </ComboBox>
 
-                <ComboBox x:Name="FontSizeComboBox" Grid.Row="1" Margin="112,0,2,2" IsEditable="True" Width="40" VerticalAlignment="Bottom" Height="17" Padding="2,0,4,0" SelectionChanged="FontSizeComboBox_SelectionChanged" FontSize="10">
+                <ComboBox x:Name="FontSizeComboBox" Grid.Row="1" Margin="112,0,2,3" IsEditable="True" Width="40" VerticalAlignment="Bottom" Height="17" Padding="2,0,4,2" SelectionChanged="FontSizeComboBox_SelectionChanged" FontSize="10">
                 </ComboBox>
             </Grid>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Grid x:Name="fontColor" Width="54" RenderTransformOrigin="2.5,0.5" Height="40">
+            <Grid x:Name="fontColor" Width="54" RenderTransformOrigin="2.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Label Content="Font color" Height="17" FontSize="10" Margin="2,1,2,0" Padding="2,2,2,0" VerticalAlignment="Top"/>
 
-                <ComboBox x:Name="ColorComboBox" Grid.Row="1" Margin="2,0,2,2" VerticalAlignment="Bottom" Height="17" Padding="6,0,5,0" SelectionChanged="ColorComboBox_SelectionChanged" FontSize="10">
+                <ComboBox x:Name="ColorComboBox" Grid.Row="1" Margin="2,12,2,0" VerticalAlignment="Top" Height="17" Padding="6,0,5,0" SelectionChanged="ColorComboBox_SelectionChanged" FontSize="10">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -96,14 +96,14 @@
 
             </Grid>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Grid x:Name="backgroundColor" Width="85" RenderTransformOrigin="0.5,0.5" Height="40">
+            <Grid x:Name="backgroundColor" Width="85" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Label Content="Background color" Height="17" FontSize="10" Margin="0,1,2,0" Padding="2,2,2,0" VerticalAlignment="Top"/>
+                <Label Content="Background color" Height="17" FontSize="10" Margin="0,1,2,2" Padding="2,2,2,2" VerticalAlignment="Top"/>
 
-                <ComboBox x:Name="BackgroundColorComboBox" Grid.Row="1" Margin="2,0,2,2" VerticalAlignment="Bottom" Height="17" Padding="6,0,5,0" SelectionChanged="BackgroundColorComboBox_SelectionChanged" FontSize="10">
+                <ComboBox x:Name="BackgroundColorComboBox" Grid.Row="1" Margin="2,10,2,0" VerticalAlignment="Top" Height="17" Padding="6,0,5,0" SelectionChanged="BackgroundColorComboBox_SelectionChanged" FontSize="10">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -119,43 +119,43 @@
 
             </Grid>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Grid x:Name="fontSizeUpDown" Width="21" RenderTransformOrigin="0.5,0.5" Height="40">
+            <Grid x:Name="fontSizeUpDown" Width="26" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Button x:Name="sizeUp" Grid.Row="0" Margin="1,2,2,1" VerticalAlignment="Top" Width="17" Height="17" Click="sizeUp_Click">
+                <Button x:Name="sizeUp" Margin="2,1,1,0" VerticalAlignment="Center" Width="22" Height="22" Click="sizeUp_Click">
                     <TextBlock Text="A^" TextDecorations="None" FontSize="9"/>
                 </Button>
-                <Button x:Name="sizeDown" Grid.Row="1" Margin="1,1,1,2" VerticalAlignment="Top" Width="17" Height="17" Click="sizeDown_Click">
+                <Button x:Name="sizeDown" Grid.Row="1" Margin="2,0,1,0" VerticalAlignment="Top" Width="22" Height="22" Click="sizeDown_Click">
                     <TextBlock Text="a^" TextDecorations="None" FontSize="9"/>
                 </Button>
 
             </Grid>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Button x:Name="boldButton" Margin="2,2,1,2" VerticalAlignment="Top" Width="24" Height="36" Click="Bold_Click" FontWeight="Bold">
+            <Button x:Name="boldButton" Margin="2,2,1,2" VerticalAlignment="Top" Width="30" Height="45" Click="Bold_Click" FontWeight="Bold">
                 <TextBlock Text="B" TextDecorations="None"/>
             </Button>
-            <Button x:Name="italicButton" Margin="1,2,1,1" VerticalAlignment="Top" Width="24" Height="36" Click="Italic_Click" FontStyle="Oblique">
+            <Button x:Name="italicButton" Margin="1,2,1,1" VerticalAlignment="Top" Width="30" Height="45" Click="Italic_Click" FontStyle="Oblique">
                 <TextBlock Text="I" TextDecorations="None"/>
             </Button>
-            <Button x:Name="underlineButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="24" Height="36" Click="Underline_Click" FontFamily="Arial">
+            <Button x:Name="underlineButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="Underline_Click" FontFamily="Arial">
                 <TextBlock Text="U" TextDecorations="Underline"/>
             </Button>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Grid x:Name="searchText" Width="21" RenderTransformOrigin="0.5,0.5" Height="40">
+            <Grid x:Name="searchText" Width="24" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Button x:Name="searchButton" Margin="2,0,0,0" VerticalAlignment="Center" Height="16" Click="searchButton_Click" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" Width="17" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="searchButton" Margin="2,0,0,0" VerticalAlignment="Center" Height="22" Click="searchButton_Click" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" Width="22" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-view-64.png"/>
                         </ContentControl.Content>
                     </ContentControl>
                 </Button>
-                <Button x:Name="markerButton" Grid.Row="1" Margin="1,1,1,2" VerticalAlignment="Top" Width="17" Height="17" Click="markerButton_Click" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="markerButton" Grid.Row="1" Margin="1,1,1,2" VerticalAlignment="Top" Width="22" Height="22" Click="markerButton_Click" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-bullet-64.png"/>
@@ -164,20 +164,20 @@
                 </Button>
 
             </Grid>
-            <Grid x:Name="insert" Width="21" RenderTransformOrigin="0.5,0.5" Height="40">
+            <Grid x:Name="insert" Width="24" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="11*"/>
                     <RowDefinition Height="9*"/>
                     <RowDefinition Height="20*"/>
                 </Grid.RowDefinitions>
-                <Button x:Name="insertPicButton" Margin="2,0,2,0" VerticalAlignment="Center" Width="17" Height="16" Click="insertPicButton_Click" RenderTransformOrigin="0.5,0.5" Grid.RowSpan="2" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="insertPicButton" Margin="2,0,2,0" VerticalAlignment="Center" Width="22" Height="22" Click="insertPicButton_Click" RenderTransformOrigin="0.5,0.5" Grid.RowSpan="2" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-image-64.png" Stretch="Fill"/>
                         </ContentControl.Content>
                     </ContentControl>
                 </Button>
-                <Button x:Name="saveButton" Grid.Row="2" Margin="2,1,2,2" Width="17" Click="saveButton_Click" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="saveButton" Grid.Row="2" Margin="2,1,2,2" Width="22" Click="saveButton_Click" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-save-as-64.png"/>
@@ -187,28 +187,28 @@
 
             </Grid>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Button x:Name="alignLeft" Margin="2,2,1,2" VerticalAlignment="Top" Width="24" Height="36" Click="alignLeft_Click" FontWeight="Bold" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="alignLeft" Margin="2,2,1,2" VerticalAlignment="Top" Width="30" Height="45" Click="alignLeft_Click" FontWeight="Bold" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-align-left-50.png" Stretch="Uniform"/>
                     </ContentControl.Content>
                 </ContentControl>
             </Button>
-            <Button x:Name="alignCentr" Margin="1,2,1,1" VerticalAlignment="Top" Width="24" Height="36" Click="alignCentr_Click" FontStyle="Oblique" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="alignCentr" Margin="1,2,1,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignCentr_Click" FontStyle="Oblique" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-align-center-50.png" Stretch="Uniform"/>
                     </ContentControl.Content>
                 </ContentControl>
             </Button>
-            <Button x:Name="alignRight" Margin="1,2,2,1" VerticalAlignment="Top" Width="24" Height="36" Click="alignRight_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="alignRight" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignRight_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-align-right-50.png" Stretch="Uniform"/>
                     </ContentControl.Content>
                 </ContentControl>
             </Button>
-            <Button x:Name="alignJunify" Margin="1,2,2,1" VerticalAlignment="Top" Width="24" Height="36" Click="alignJunify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="alignJunify" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJunify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-align-justify-50.png" Stretch="Uniform"/>
@@ -216,14 +216,14 @@
                 </ContentControl>
             </Button>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Button x:Name="settingsButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="24" Height="36" Click="alignRight_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="settingsButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignRight_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-settings-50.png" Stretch="Uniform"/>
                     </ContentControl.Content>
                 </ContentControl>
             </Button>
-            <Button x:Name="helpButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="24" Height="36" Click="alignJunify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="helpButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJunify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-help-64.png" Stretch="Uniform"/>
@@ -265,25 +265,7 @@
                 </ContentControl>
 
             </Button>
-            <Button x:Name="shareButton" Margin="1,2,1,2" VerticalAlignment="Top" Width="18" Height="18" BorderBrush="White" Style="{StaticResource IconButtonStyle}">
-                <ContentControl>
-                    <ContentControl.Content>
-                        <Image Source="/icons8-share-50.png"/>
-                    </ContentControl.Content>
-                </ContentControl>
-
-            </Button>
-            <Slider x:Name="scaleSlider" HorizontalAlignment="Left" Margin="1,2,1,2" Grid.Row="3" VerticalAlignment="Top" Width="120" Maximum="2" SmallChange="0.01" Value="{Binding scale, Mode=TwoWay}" Background="{x:Null}" Cursor="Hand" TickPlacement="BottomRight"/>
-            <TextBlock x:Name="scaleValueLabel" VerticalAlignment="Top" Margin="0,2,0,2" Height="18" Width="22" />
-            <Button x:Name="zoomInButton" Margin="5,2,1,2" VerticalAlignment="Top" Width="18" Height="18" BorderBrush="White" Style="{StaticResource IconButtonStyle}">
-                <ContentControl>
-                    <ContentControl.Content>
-                        <Image Source="/icons8-zoom-in-60.png" Width="18" Height="18"/>
-                    </ContentControl.Content>
-                </ContentControl>
-
-            </Button>
-            <Button x:Name="zoomOutButton" Margin="1,2,1,2" VerticalAlignment="Top" Width="18" Height="18" BorderBrush="White" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="zoomOutButton" Margin="1,2,1,2" VerticalAlignment="Top" Width="18" Height="18" BorderBrush="White" Style="{StaticResource IconButtonStyle}" Click="zoomOutButton_Click">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-zoom-out-60.png"/>
@@ -291,6 +273,16 @@
                 </ContentControl>
 
             </Button>
+            <Slider x:Name="scaleSlider" HorizontalAlignment="Left" Margin="1,2,1,2" Grid.Row="3" VerticalAlignment="Top" Width="120" Maximum="2" SmallChange="0.01" Value="{Binding scale, Mode=TwoWay}" Background="{x:Null}" Cursor="Hand" TickPlacement="BottomRight"/>
+            <Button x:Name="zoomInButton" Margin="5,2,1,2" VerticalAlignment="Top" Width="18" Height="18" BorderBrush="White" Style="{StaticResource IconButtonStyle}" Click="zoomInButton_Click">
+                <ContentControl>
+                    <ContentControl.Content>
+                        <Image Source="/icons8-zoom-in-60.png" Width="18" Height="18"/>
+                    </ContentControl.Content>
+                </ContentControl>
+
+            </Button>
+            <TextBlock x:Name="scaleValueLabel" VerticalAlignment="Top" Margin="0,2,0,2" Height="18" Width="32" />
         </StackPanel>
     </Grid>
 
