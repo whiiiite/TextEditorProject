@@ -1,26 +1,21 @@
-﻿using Microsoft.Win32;
-//using PdfSharp.Drawing;
+﻿//using PdfSharp.Drawing;
 //using PdfSharp.Drawing.Layout;
 //using PdfSharp.Pdf;
 //using PdfSharp.Pdf.IO;
 //using System;
-using System.IO;
+using System.ComponentModel;
 using System.Windows;
-using System.Windows.Documents;
 //using System.Windows.Shapes;
 //using PdfiumViewer;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Drawing;
-using Color = System.Windows.Media.Color;
-using FontFamily = System.Windows.Media.FontFamily;
-using System.Windows.Input;
-using System.Reflection.Metadata;
-using System.Windows.Markup;
-using System.ComponentModel;
 using System.Windows.Data;
-using TextEditor.Util;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using TextEditor.FileSystem;
+using TextEditor.Util;
+using FontFamily = System.Windows.Media.FontFamily;
 
 namespace TextEditor
 {
@@ -36,7 +31,9 @@ namespace TextEditor
         private RichTextBox currentRichTextBox;
         public event PropertyChangedEventHandler PropertyChanged;
         Binding binding = new Binding("Scale");
-       
+        private TextPointer selectionStart;
+        private TextPointer selectionEnd;
+
 
         protected virtual void OnPropertyChanged(string propertyName)
         {
@@ -73,6 +70,101 @@ namespace TextEditor
             scaleSlider.SetBinding(Slider.ValueProperty, binding);
             scaleSlider.ValueChanged += ScaleSlider_ValueChanged;
             UpdateScaleValueLabel();
+            richTextBox.PreviewMouseDown += RichTextBox_PreviewMouseDown;
+            richTextBox.PreviewMouseMove += RichTextBox_PreviewMouseMove;
+            richTextBox.PreviewMouseUp += RichTextBox_PreviewMouseUp;
+        }
+
+        private Point startPoint;
+        private bool isResizing = false;
+
+        private void RichTextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                startPoint = e.GetPosition(richTextBox);
+                isResizing = true;
+            }
+        }
+
+        private void RichTextBox_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (isResizing)
+            {
+                Point currentPoint = e.GetPosition(richTextBox);
+                double widthChange = currentPoint.X - startPoint.X;
+                double heightChange = currentPoint.Y - startPoint.Y;
+
+                // Получаем текущий элемент под курсором
+                TextPointer position = richTextBox.GetPositionFromPoint(currentPoint, true);
+                Inline currentInline = position?.Parent as Inline;
+
+                if (currentInline != null)
+                {
+                    // Обновляем шрифт в FontComboBox
+                    FontComboBox.SelectedItem = Fonts.SystemFontFamilies.FirstOrDefault(font => font.Source == (currentInline.FontFamily ?? richTextBox.FontFamily).Source);
+
+                    // Обновляем размер шрифта в FontSizeComboBox
+                    FontSizeComboBox.SelectedItem = currentInline.FontSize;
+                }
+
+                // Ваш код для изменения размера контейнера (например, изменение ширины и высоты)
+                ResizeContainer(widthChange, heightChange);
+
+                // Обновляем startPoint
+                startPoint = currentPoint;
+            }
+        }
+
+        private void ResizeContainer(double widthChange, double heightChange)
+        {
+            InlineUIContainer selectedContainer = GetSelectedImageContainer();
+
+            if (selectedContainer != null)
+            {
+                Image image = selectedContainer.Child as Image;
+
+                if (image != null)
+                {
+                    try
+                    {
+                        // Изменение размера изображения
+                        image.Width += widthChange;
+                        image.Height += heightChange;
+
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        private InlineUIContainer GetSelectedImageContainer()
+        {
+            TextPointer selectionStart = richTextBox.Selection.Start;
+            TextPointer selectionEnd = richTextBox.Selection.End;
+
+            if (selectionStart != null && selectionEnd != null)
+            {
+                TextRange selectedTextRange = new TextRange(selectionStart, selectionEnd);
+
+                foreach (Inline inline in selectedTextRange.Start.Paragraph.Inlines)
+                {
+                    if (inline is InlineUIContainer inlineUIContainer && inlineUIContainer.Child is Image)
+                    {
+                        return inlineUIContainer;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void RichTextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                isResizing = false;
+            }
         }
 
         private void ScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -388,24 +480,6 @@ namespace TextEditor
             }
         }
 
-        private void RichTextBox_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            TextPointer position = richTextBox.GetPositionFromPoint(e.GetPosition(richTextBox), true);
-
-            if (position != null)
-            {
-                // Получаем текущий элемент под курсором
-                Inline currentInline = position.Parent as Inline;
-                if (currentInline != null)
-                {
-                    // Устанавливаем шрифт в FontComboBox
-                    FontComboBox.SelectedItem = Fonts.SystemFontFamilies.FirstOrDefault(font => font.Source == (currentInline.FontFamily ?? richTextBox.FontFamily).Source);
-
-                    // Устанавливаем размер шрифта в FontSizeComboBox
-                    FontSizeComboBox.SelectedItem = currentInline.FontSize;
-                }
-            }
-        }
 
         private void ApplyToList(TextMarkerStyle listType)
         {
@@ -440,39 +514,83 @@ namespace TextEditor
             richTextBox.CaretPosition = insertionPosition;
         }
 
-        private void InsertImage_Click(object sender, RoutedEventArgs e)
-        {
- 
-        }
-
         private void alignLeft_Click(object sender, RoutedEventArgs e)
         {
-
+            richTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Left);
         }
 
         private void alignCentr_Click(object sender, RoutedEventArgs e)
         {
-
+            richTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Center);
         }
 
         private void alignRight_Click(object sender, RoutedEventArgs e)
         {
-
+            richTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Right);
         }
 
-        private void alignJunify_Click(object sender, RoutedEventArgs e)
+        private void alignJustify_Click(object sender, RoutedEventArgs e)
         {
-
+            richTextBox.Selection.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Justify);
         }
 
         private void insertPicButton_Click(object sender, RoutedEventArgs e)
         {
 
+            // Проверка, открыт ли документ
+            if (richTextBox.CaretPosition.Paragraph != null)
+            {
+                // Создание диалогового окна для выбора файла
+                Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+                openFileDialog.Filter = "Изображения (*.png; *.jpg; *.jpeg; *.gif; *.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp|Все файлы (*.*)|*.*";
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    // Получение пути к выбранному файлу
+                    string imagePath = openFileDialog.FileName;
+
+                    // Получение текущей ширины страницы
+                    double pageWidth = richTextBox.ExtentWidth;
+                    double newWidth;
+                    double newHeight;
+                    // Создание объекта BitmapImage
+                    BitmapImage bitmap = new BitmapImage(new Uri(imagePath));
+
+                    // Вычисление пропорционального размера изображения
+                    double aspectRatio = bitmap.Width / bitmap.Height;
+                    if (bitmap.Width > pageWidth)
+                    {
+                        newWidth = pageWidth; // новая ширина равна ширине страницы
+                        newHeight = newWidth / aspectRatio; // новая высота с учетом соотношения сторон
+                    }
+                    else
+                    {
+                        newWidth = bitmap.Width;
+                        newHeight = bitmap.Height;
+                    }
+                    // Создание элемента Image
+                    Image image = new Image();
+                    image.Source = bitmap;
+                    image.Width = newWidth;
+                    image.Height = newHeight;
+
+                    // Создание контейнера для вставки изображения в RichTextBox
+                    InlineUIContainer container = new InlineUIContainer(image, richTextBox.CaretPosition);
+
+                    // Добавление контейнера к RichTextBox
+                    richTextBox.CaretPosition.Paragraph.Inlines.Add(container);
+                }
+            }
+            else
+            {
+                // Ваш код для случая, когда документ не открыт
+                MessageBox.Show("The document is not open. Open your document before inserting the image.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
-
+            DocumentsHandler.SaveDocument(sender, e, currentFileName, richTextBox);
         }
 
         private void searchButton_Click(object sender, RoutedEventArgs e)

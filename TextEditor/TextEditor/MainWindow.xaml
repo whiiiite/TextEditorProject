@@ -54,7 +54,7 @@
                     <MenuItem Header="Numbered List" Click="NumberedList_Click"/>
                 </MenuItem>
                 <MenuItem Header="Insert">
-                    <MenuItem Header="Image" Click="InsertImage_Click"/>
+                    <MenuItem Header="Image" Click="insertPicButton_Click"/>
                 </MenuItem>
             </MenuItem>
         </Menu>
@@ -143,19 +143,19 @@
                 <TextBlock Text="U" TextDecorations="Underline"/>
             </Button>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Grid x:Name="searchText" Width="24" RenderTransformOrigin="0.5,0.5" Height="50">
+            <Grid x:Name="searchText" Width="26" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Button x:Name="searchButton" Margin="2,0,0,0" VerticalAlignment="Center" Height="22" Click="searchButton_Click" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" Width="22" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="searchButton" Margin="1,1,1,0" VerticalAlignment="Center" Width="20" Height="20" Click="searchButton_Click"  Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-view-64.png"/>
                         </ContentControl.Content>
                     </ContentControl>
                 </Button>
-                <Button x:Name="markerButton" Grid.Row="1" Margin="1,1,1,2" VerticalAlignment="Top" Width="22" Height="22" Click="markerButton_Click" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="markerButton" Grid.Row="1" Margin="1,1,1,2" VerticalAlignment="Top" Width="20" Height="20" Click="markerButton_Click" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-bullet-64.png"/>
@@ -164,20 +164,19 @@
                 </Button>
 
             </Grid>
-            <Grid x:Name="insert" Width="24" RenderTransformOrigin="0.5,0.5" Height="50">
+            <Grid x:Name="insert" Width="26" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="11*"/>
-                    <RowDefinition Height="9*"/>
-                    <RowDefinition Height="20*"/>
+                    <RowDefinition/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Button x:Name="insertPicButton" Margin="2,0,2,0" VerticalAlignment="Center" Width="22" Height="22" Click="insertPicButton_Click" RenderTransformOrigin="0.5,0.5" Grid.RowSpan="2" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="insertPicButton" Margin="1,1,1,0"  VerticalAlignment="Center" Width="20" Height="20" Click="insertPicButton_Click" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-image-64.png" Stretch="Fill"/>
                         </ContentControl.Content>
                     </ContentControl>
                 </Button>
-                <Button x:Name="saveButton" Grid.Row="2" Margin="2,1,2,2" Width="22" Click="saveButton_Click" Style="{StaticResource IconButtonStyle}">
+                <Button x:Name="saveButton" Grid.Row="2" Margin="1,1,1,2" VerticalAlignment="Top" Width="20" Height="20" Click="saveButton_Click" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
                         <ContentControl.Content>
                             <Image Source="/icons8-save-as-64.png"/>
@@ -208,7 +207,7 @@
                     </ContentControl.Content>
                 </ContentControl>
             </Button>
-            <Button x:Name="alignJunify" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJunify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="alignJunify" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJustify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-align-justify-50.png" Stretch="Uniform"/>
@@ -216,14 +215,7 @@
                 </ContentControl>
             </Button>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Button x:Name="settingsButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignRight_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
-                <ContentControl>
-                    <ContentControl.Content>
-                        <Image Source="/icons8-settings-50.png" Stretch="Uniform"/>
-                    </ContentControl.Content>
-                </ContentControl>
-            </Button>
-            <Button x:Name="helpButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJunify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="helpButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJustify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-help-64.png" Stretch="Uniform"/>
