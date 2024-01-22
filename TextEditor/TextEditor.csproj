@@ -31,11 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MADE.UI.Controls.RichEditToolbar" Version="1.6.0" />
-    <PackageReference Include="PresentationFramework" Version="4.6.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="icons8-align-center-50.png" />
     <Resource Include="icons8-align-justify-50.png" />
     <Resource Include="icons8-align-Justify-64.png" />

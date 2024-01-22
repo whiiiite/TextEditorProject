@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Closing="Window_Closing"
         xmlns:local="clr-namespace:TextEditor"
         mc:Ignorable="d"
         Title="Text Editor" Height="450" Width="800">
@@ -43,14 +44,14 @@
                 <MenuItem Header="Exit" Click="Exit_Click"/>
             </MenuItem>
             <MenuItem Header="Edit">
-                <MenuItem Header="Find" Click="Find_Click"/>
+                <MenuItem Header="Find" Click="searchButton_Click"/>
                 <MenuItem Header="Format">
                     <MenuItem Header="Bold" Click="Bold_Click"/>
                     <MenuItem Header="Italic" Click="Italic_Click"/>
                     <MenuItem Header="Underline" Click="Underline_Click"/>
                 </MenuItem>
                 <MenuItem Header="Lists">
-                    <MenuItem Header="Bullet List" Click="BulletList_Click"/>
+                    <MenuItem Header="Bullet List" Click="markerButton_Click"/>
                     <MenuItem Header="Numbered List" Click="NumberedList_Click"/>
                 </MenuItem>
                 <MenuItem Header="Insert">
@@ -215,7 +216,7 @@
                 </ContentControl>
             </Button>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
-            <Button x:Name="helpButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="alignJustify_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
+            <Button x:Name="helpButton" Margin="1,2,2,1" VerticalAlignment="Top" Width="30" Height="45" Click="helpButton_Click" FontFamily="Arial" Style="{StaticResource IconButtonStyle}">
                 <ContentControl>
                     <ContentControl.Content>
                         <Image Source="/icons8-help-64.png" Stretch="Uniform"/>
