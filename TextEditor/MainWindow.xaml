@@ -106,26 +106,59 @@
             <ToolBar Grid.Row="0" VerticalAlignment="Top">
                 <Button x:Name="undoButton" Command="ApplicationCommands.Undo" Margin="1,1,1,0"  VerticalAlignment="Center" Width="20" Height="20" Style="{StaticResource IconButtonStyle}">
                     <ContentControl>
-                        <ContentControl.Content>
-                            <Image Source="/icons8-undo-48.png" Stretch="Fill"/>
-                        </ContentControl.Content>
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=undoButton, Path=IsEnabled}" Value="True">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Image Source="/icons8-undo-48.png" Stretch="Fill"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=undoButton, Path=IsEnabled}" Value="False">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Image Source="/icons8-undo-25.png" Stretch="Fill"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
                     </ContentControl>
                     <Button.ToolTip>
                         <ToolTip Content="Undo" />
                     </Button.ToolTip>
-                
                 </Button>
+                <!-- Аналогічно для кнопки Redo -->
                 <Button x:Name="redoButton" Command="ApplicationCommands.Redo" Margin="1,1,1,0"  VerticalAlignment="Center" Width="20" Height="20" Style="{StaticResource IconButtonStyle}">
-                        <ContentControl>
-                            <ContentControl.Content>
-                                <Image Source="/icons8-redo-48.png" Stretch="Fill"/>
-                            </ContentControl.Content>
-                        </ContentControl>
-                        <Button.ToolTip>
-                            <ToolTip Content="Redo" />
-                        </Button.ToolTip>
+                    <ContentControl>
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=redoButton, Path=IsEnabled}" Value="True">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Image Source="/icons8-redo-48.png" Stretch="Fill"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=redoButton, Path=IsEnabled}" Value="False">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Image Source="/icons8-redo-25.png" Stretch="Fill"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+                    <Button.ToolTip>
+                        <ToolTip Content="Redo" />
+                    </Button.ToolTip>
                 </Button>
-
             </ToolBar>
         </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal">

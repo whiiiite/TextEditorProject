@@ -26,11 +26,13 @@
     <None Remove="icons8-new-file-64.png" />
     <None Remove="icons8-numeric-50.png" />
     <None Remove="icons8-open-file.png" />
+    <None Remove="icons8-redo-25.png" />
     <None Remove="icons8-redo-48.png" />
     <None Remove="icons8-save-50.png" />
     <None Remove="icons8-save-as-64.png" />
     <None Remove="icons8-settings-50.png" />
     <None Remove="icons8-share-50.png" />
+    <None Remove="icons8-undo-25.png" />
     <None Remove="icons8-undo-48.png" />
     <None Remove="icons8-view-64.png" />
     <None Remove="icons8-zoom-in-60.png" />
@@ -55,11 +57,13 @@
     <Resource Include="icons8-new-file-64.png" />
     <Resource Include="icons8-numeric-50.png" />
     <Resource Include="icons8-open-file.png" />
+    <Resource Include="icons8-redo-25.png" />
     <Resource Include="icons8-redo-48.png" />
     <Resource Include="icons8-save-50.png" />
     <Resource Include="icons8-save-as-64.png" />
     <Resource Include="icons8-settings-50.png" />
     <Resource Include="icons8-share-50.png" />
+    <Resource Include="icons8-undo-25.png" />
     <Resource Include="icons8-undo-48.png" />
     <Resource Include="icons8-view-64.png" />
     <Resource Include="icons8-zoom-in-60.png" />
