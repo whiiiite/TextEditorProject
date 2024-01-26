@@ -12,6 +12,7 @@ using TextEditor.Util;
 using System.Windows.Threading;
 using FontFamily = System.Windows.Media.FontFamily;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace TextEditor
 {
@@ -30,8 +31,10 @@ namespace TextEditor
         private TextPointer selectionStart;
         private TextPointer selectionEnd;
         private bool updatePanel=false;
-        private bool isDirty = false; 
-        
+        private bool isDirty = false;
+        private List<TextRange> highlightedRanges = new List<TextRange>();
+        int searchStatus = 0;
+
         private void MarkAsDirty()
         {
             isDirty = true;
@@ -82,15 +85,20 @@ namespace TextEditor
         {
             if (richTextBox.CaretPosition != null)
             {
+                if (searchStatus==1)
+                {
+                    ClearSearch();
+                    searchStatus = 0;
+                }
                 updatePanel = true;
-                UpdateFontComboBox();
-                UpdateFontSizeComboBox();
-                UpdateColorComboBox();
-                UpdateBackgroundColorComboBox();
-                UpdateBold();
-                UpdateItalic();
-                UpdateUnderline();
-                updatePanel = false;
+                    UpdateFontComboBox();
+                    UpdateFontSizeComboBox();
+                    UpdateColorComboBox();
+                    UpdateBackgroundColorComboBox();
+                    UpdateBold();
+                    UpdateItalic();
+                    UpdateUnderline();
+                    updatePanel = false;
             }
         }
 
@@ -150,7 +158,6 @@ namespace TextEditor
                         // Изменение размера изображения
                         image.Width += widthChange;
                         image.Height += heightChange;
-
                     }
                     catch { }
                 }
@@ -210,6 +217,8 @@ namespace TextEditor
         }
         private void AddNewPage()
         {
+
+            
             // Створення нового RichTextBox
             RichTextBox newRichTextBox = new RichTextBox();
             newRichTextBox.AcceptsReturn = true;
@@ -262,15 +271,19 @@ namespace TextEditor
         }
         private void New_Click(object sender, RoutedEventArgs e)
         {
+            if (IfNotSave()) return;
+            
             // Створення FlowDocument зі специфікаціями A4
             FlowDocument flowDocument = new FlowDocument();
             flowDocument.ColumnWidth = 8.27 * 96; // Ширина колонки в пікселях (A4 ширина в дюймах помножити на 96 пікселів)
             flowDocument.PageHeight = 11.69 * 96; // Висота сторінки в пікселях
-
+            double fontSize = 12.0;
             // Створення секції для першої сторінки
             Section section = new Section();
             flowDocument.Blocks.Add(section);
             Paragraph paragraph = new Paragraph(new Run(""));
+            paragraph.LineHeight = fontSize*0.5;
+            //paragraph.
             section.Blocks.Add(paragraph);
             richTextBox.Document = flowDocument;
             richTextBox.IsEnabled = true;
@@ -306,8 +319,10 @@ namespace TextEditor
 
         private void Open_Click(object sender, RoutedEventArgs e) //LoadDocument(string filePath)
         {
+            if (IfNotSave()) return;
+
+            //richTextBox.Document = new FlowDocument(); // Очищаем содержимое RichTextBox
             currentFileName = DocumentsHandler.Open(richTextBox, currentFileName);
-            //MessageBox.Show(currentFileName);
             UpdateMainWindowTitle();
         }
 
@@ -333,7 +348,7 @@ namespace TextEditor
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (IfNotSave()) return;
+            if (IfNotSave()) e.Cancel = true; 
         }
 
         private bool IfNotSave()
@@ -349,8 +364,19 @@ namespace TextEditor
 
         private void searchButton_Click(object sender, RoutedEventArgs e)
         {
-            string temp1 = Interaction.InputBox("Which word you want found?", "Input", "");
-            if (temp1 != "") { FindAndUnderlineWord(richTextBox, temp1); }
+            string temp1 = Interaction.InputBox("Which word do you want to find?", "Input", "");
+            if (!string.IsNullOrEmpty(temp1))
+            {
+                // Видаляємо попередні виділення перед новим пошуком
+                foreach (TextRange range in highlightedRanges)
+                {
+                    range.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Transparent);
+                }
+                highlightedRanges.Clear();
+
+                FindAndUnderlineWord(richTextBox, temp1);
+                searchStatus = 1;
+            }
         }
 
         private void FindAndUnderlineWord(RichTextBox richTextBox, string wordToFind)
@@ -368,7 +394,11 @@ namespace TextEditor
                     TextPointer start = current.GetPositionAtOffset(index);
                     TextPointer end = start.GetPositionAtOffset(wordToFind.Length);
                     TextRange wordRange = new TextRange(start, end);
-                    wordRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Yellow);
+                    wordRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.LightGreen);
+
+                    // Зберігаємо діапазон, щоб потім відновити фон
+                    highlightedRanges.Add(wordRange);
+
                     current = end;
                 }
                 else
@@ -377,16 +407,19 @@ namespace TextEditor
                 }
             }
 
-            DispatcherTimer timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-            timer.Tick += (sender, args) =>
-            {
-                TextRange clearRange = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
-                clearRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Transparent);
-                timer.Stop();
-            };
-            timer.Start();
-
+            
         }
+
+        private void ClearSearch()
+        {
+                // Відновлюємо фон для всіх збережених діапазонів
+                foreach (TextRange range in highlightedRanges)
+                {
+                    range.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Transparent);
+                }
+                highlightedRanges.Clear();
+        }
+
 
         private void Bold_Click(object sender, RoutedEventArgs e)
         {
@@ -398,43 +431,55 @@ namespace TextEditor
 
         private void UpdateBold()
         {
-            FontWeight fontWeight = (FontWeight)richTextBox.Selection.GetPropertyValue(TextElement.FontWeightProperty);
+            try
+            {
+                FontWeight fontWeight = (FontWeight)richTextBox.Selection.GetPropertyValue(TextElement.FontWeightProperty);
 
-            if (fontWeight == FontWeights.Bold)
-            {
-                boldButton.Background = Brushes.DarkGray; 
+                if (fontWeight == FontWeights.Bold)
+                {
+                    boldButton.Background = Brushes.DarkGray;
+                }
+                else
+                {
+                    boldButton.ClearValue(Button.BackgroundProperty);
+                }
             }
-            else
-            {
-                boldButton.ClearValue(Button.BackgroundProperty); 
-            }
+            catch { }
         }
         private void UpdateItalic()
         {
-            FontStyle fontStyle = (FontStyle)richTextBox.Selection.GetPropertyValue(TextElement.FontStyleProperty);
+            try
+            {
+                FontStyle fontStyle = (FontStyle)richTextBox.Selection.GetPropertyValue(TextElement.FontStyleProperty);
 
-            if (fontStyle == FontStyles.Italic)
-            {
-                italicButton.Background = Brushes.DarkGray; 
+                if (fontStyle == FontStyles.Italic)
+                {
+                    italicButton.Background = Brushes.DarkGray;
+                }
+                else
+                {
+                    italicButton.ClearValue(Button.BackgroundProperty);
+                }
             }
-            else
-            {
-                italicButton.ClearValue(Button.BackgroundProperty); 
-            }
+            catch { }
         }
         private void UpdateUnderline()
         {
-            // Обновляем фон кнопки в соответствии с наличием подчеркивания
-            TextDecorationCollection textDecorations = (TextDecorationCollection)richTextBox.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
+            try
+            {
+                // Обновляем фон кнопки в соответствии с наличием подчеркивания
+                TextDecorationCollection textDecorations = (TextDecorationCollection)richTextBox.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
 
-            if (textDecorations != null && textDecorations.Contains(TextDecorations.Underline[0]))
-            {
-                underlineButton.Background = Brushes.DarkGray; 
+                if (textDecorations != null && textDecorations.Contains(TextDecorations.Underline[0]))
+                {
+                    underlineButton.Background = Brushes.DarkGray;
+                }
+                else
+                {
+                    underlineButton.ClearValue(Button.BackgroundProperty);
+                }
             }
-            else
-            {
-                underlineButton.ClearValue(Button.BackgroundProperty); 
-            }
+            catch { }
         }
 
         private void Italic_Click(object sender, RoutedEventArgs e)
@@ -521,16 +566,6 @@ namespace TextEditor
                     }
                 }
             }
-        }
-
-        private void BulletList_Click(object sender, RoutedEventArgs e)
-        {
-            ApplyToList(listType: TextMarkerStyle.Disc);
-        }
-
-        private void NumberedList_Click(object sender, RoutedEventArgs e)
-        {
-            ApplyToList(listType: TextMarkerStyle.Decimal);
         }
 
         private void sizeUp_Click(object sender, RoutedEventArgs e)
@@ -705,38 +740,38 @@ namespace TextEditor
         }
 
 
-        private void ApplyToList(TextMarkerStyle listType)
-        {
-            List list = new List();
-            list.MarkerStyle = listType;
+        //private void ApplyToList(TextMarkerStyle listType)
+        //{
+        //    List list = new List();
+        //    list.MarkerStyle = listType;
 
-            TextPointer insertionPosition;
+        //    TextPointer insertionPosition;
 
-            if (richTextBox.Selection.IsEmpty)
-            {
-                Paragraph paragraph = new Paragraph();
-                paragraph.Margin = new Thickness(0);
-                paragraph.Inlines.Add(list.ToString());
-                richTextBox.CaretPosition.Paragraph.SiblingBlocks.Add(paragraph);
-                insertionPosition = paragraph.ContentEnd;
-            }
-            else
-            {
-                richTextBox.Selection.ApplyPropertyValue(Inline.FontWeightProperty, FontWeights.Bold);
-                richTextBox.Selection.ApplyPropertyValue(Inline.FontStyleProperty, FontStyles.Italic);
-                richTextBox.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
-                richTextBox.Selection.ApplyPropertyValue(Inline.ForegroundProperty, null);
-                richTextBox.Selection.ApplyPropertyValue(Inline.BackgroundProperty, null);
+        //    if (richTextBox.Selection.IsEmpty)
+        //    {
+        //        Paragraph paragraph = new Paragraph();
+        //        paragraph.Margin = new Thickness(0);
+        //        paragraph.Inlines.Add(list.ToString());
+        //        richTextBox.CaretPosition.Paragraph.SiblingBlocks.Add(paragraph);
+        //        insertionPosition = paragraph.ContentEnd;
+        //    }
+        //    else
+        //    {
+        //        richTextBox.Selection.ApplyPropertyValue(Inline.FontWeightProperty, FontWeights.Bold);
+        //        richTextBox.Selection.ApplyPropertyValue(Inline.FontStyleProperty, FontStyles.Italic);
+        //        richTextBox.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
+        //        richTextBox.Selection.ApplyPropertyValue(Inline.ForegroundProperty, null);
+        //        richTextBox.Selection.ApplyPropertyValue(Inline.BackgroundProperty, null);
 
-                Paragraph paragraph = new Paragraph();
-                paragraph.Margin = new Thickness(0);
-                paragraph.Inlines.Add(list.ToString());
-                richTextBox.Selection.Start.Paragraph.SiblingBlocks.Add(paragraph);
-                insertionPosition = paragraph.ContentEnd;
-            }
+        //        Paragraph paragraph = new Paragraph();
+        //        paragraph.Margin = new Thickness(0);
+        //        paragraph.Inlines.Add(list.ToString());
+        //        richTextBox.Selection.Start.Paragraph.SiblingBlocks.Add(paragraph);
+        //        insertionPosition = paragraph.ContentEnd;
+        //    }
 
-            richTextBox.CaretPosition = insertionPosition;
-        }
+        //    richTextBox.CaretPosition = insertionPosition;
+        //}
 
         private void alignLeft_Click(object sender, RoutedEventArgs e)
         {
@@ -875,45 +910,393 @@ namespace TextEditor
             }
         }
 
-        private void numberedList_Click(object sender, RoutedEventArgs e)
-        { 
-        
+        private void markerBullet_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyToList(listType: TextMarkerStyle.Disc);
         }
 
-        private void markerButton_Click(object sender, RoutedEventArgs e)
+        private void markerNumbered_Click(object sender, RoutedEventArgs e)
         {
+            ApplyToList(listType: TextMarkerStyle.Decimal);
+        }
+        private void ApplyToList(TextMarkerStyle listType)
+        {
+            string bulletSymbol = listType == TextMarkerStyle.Disc ? "•" : "1";
 
-            TextRange selectedRange = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
-            string selectedText = selectedRange.Text;
+            TextSelection selectedText = richTextBox.Selection;
 
-            string[] lines = selectedText.Split(new[] { "\r\n" }, StringSplitOptions.None);
-
-            bool numberingExists = lines.Length > 0 && lines[0].Length > 2 && lines[0][1] == '.';
-
-            if (numberingExists)
+            if (!selectedText.IsEmpty)
             {
-                for (int i = 0; i < lines.Length; i++)
+                string[] lines = selectedText.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                bool hasBullet = lines.Any(line => line.TrimStart().StartsWith(bulletSymbol));
+
+                selectedText.Text = string.Empty;
+
+                foreach (string line in lines)
                 {
-                    if (lines[i].Length > 2 && lines[i][1] == '.' && Char.IsDigit(lines[i][0]))
+                    if (hasBullet)
                     {
-                        lines[i] = lines[i].Substring(lines[i].IndexOf(' ') + 1);
+                        string trimmedLine = line.TrimStart(bulletSymbol.ToCharArray());
+                        selectedText.Text += trimmedLine.TrimStart() + Environment.NewLine;
+                    }
+                    else
+                    {
+                        selectedText.Text += bulletSymbol + " " + line + Environment.NewLine;
                     }
                 }
             }
             else
             {
-                for (int i = 0; i < lines.Length; i++)
+                try
                 {
-                    lines[i] = (i + 1).ToString() + ". " + lines[i];
+                    Paragraph paragraph = richTextBox.Document.Blocks.LastBlock as Paragraph;
+
+                    if (paragraph != null)
+                    {
+                        string paragraphText = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text;
+                        bool hasBullet = paragraphText.TrimStart().StartsWith(bulletSymbol);
+
+                        Paragraph previousParagraph = GetPreviousParagraph(paragraph);
+                        bool startsWithNumberAndDot = previousParagraph != null && Regex.IsMatch(previousParagraph.Inlines.FirstInline?.ContentStart.GetTextInRun(LogicalDirection.Forward), @"^\d+\.");
+
+                        if (hasBullet && startsWithNumberAndDot)
+                        {
+                            // Відступаємо вправо на 3 символи
+                            TextPointer paragraphStart = paragraph.ContentStart.GetPositionAtOffset(0);
+                            TextPointer newCaretPosition = paragraphStart.GetPositionAtOffset(3, LogicalDirection.Forward);
+                            richTextBox.CaretPosition = newCaretPosition;
+                        }
+
+                        if (hasBullet)
+                        {
+                            paragraph.Inlines.Clear();
+                            paragraph.Inlines.Add(new Run(paragraphText.TrimStart(bulletSymbol.ToCharArray()).TrimStart()));
+                        }
+                        else
+                        {
+                            paragraph.Inlines.InsertBefore(paragraph.Inlines.FirstInline, new Run(bulletSymbol + " "));
+                        }
+                    }
+                    else
+                    {
+                        paragraph = new Paragraph(new Run(bulletSymbol + " "));
+                        richTextBox.Document.Blocks.Add(paragraph);
+                    }
+                }
+                catch (ArgumentNullException ex)
+                {
+                    Console.WriteLine($"ArgumentNullException: {ex.Message}");
+                    Console.WriteLine($"Parameter name: {ex.ParamName}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unexpected error: {ex.Message}");
                 }
             }
-
-            string updatedText = String.Join("\r\n", lines);
-
-            selectedRange.Text = updatedText;
-
-            richTextBox.Selection.Select(selectedRange.Start, selectedRange.Start);
         }
-        
+
+        private Paragraph GetPreviousParagraph(Paragraph currentParagraph)
+        {
+            if (currentParagraph == null)
+            {
+                return null;
+            }
+
+            var blockCollection = richTextBox.Document.Blocks;
+            var enumerator = blockCollection.GetEnumerator();
+
+            Paragraph previousParagraph = null;
+
+            while (enumerator.MoveNext())
+            {
+                var currentBlock = enumerator.Current as Paragraph;
+
+                if (currentBlock == currentParagraph)
+                {
+                    return previousParagraph;
+                }
+
+                previousParagraph = currentBlock;
+            }
+
+            return null;
+        }
+
+        //private void ApplyToList(TextMarkerStyle listType)
+        //{
+        //    string bulletSymbol = listType == TextMarkerStyle.Disc ? "•" : "1";
+
+        //    TextSelection selectedText = richTextBox.Selection;
+
+        //    if (!selectedText.IsEmpty)
+        //    {
+        //        string[] lines = selectedText.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+        //        bool hasBullet = lines.Any(line => line.TrimStart().StartsWith(bulletSymbol));
+
+        //        selectedText.Text = string.Empty;
+
+        //        foreach (string line in lines)
+        //        {
+        //            if (hasBullet)
+        //            {
+        //                selectedText.Text += line.TrimStart(bulletSymbol.ToCharArray()) + Environment.NewLine;
+        //            }
+        //            else
+        //            {
+        //                selectedText.Text += bulletSymbol + " " + line + Environment.NewLine;
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        try
+        //        {
+        //            Paragraph paragraph = richTextBox.Document.Blocks.LastBlock as Paragraph;
+
+        //            if (paragraph != null)
+        //            {
+        //                string paragraphText = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text;
+        //                bool hasBullet = paragraphText.TrimStart().StartsWith(bulletSymbol);
+
+        //                if (hasBullet)
+        //                {
+        //                    paragraph.Inlines.Clear();
+        //                    paragraph.Inlines.Add(new Run(paragraphText.TrimStart(bulletSymbol.ToCharArray())));
+        //                }
+        //                else
+        //                {
+        //                    paragraph.Inlines.InsertBefore(paragraph.Inlines.FirstInline, new Run(bulletSymbol + " "));
+        //                }
+        //            }
+        //            else
+        //            {
+        //                paragraph = new Paragraph(new Run(bulletSymbol + " "));
+        //                richTextBox.Document.Blocks.Add(paragraph);
+        //            }
+        //        }
+        //        catch (ArgumentNullException ex)
+        //        {
+        //            Console.WriteLine($"ArgumentNullException: {ex.Message}");
+        //            Console.WriteLine($"Parameter name: {ex.ParamName}");
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Console.WriteLine($"Unexpected error: {ex.Message}");
+        //        }
+        //    }
+        //}
+
+        private void markerButton_Click(object sender, RoutedEventArgs e)
+        {
+            TextRange selectedRange = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
+
+            if (selectedRange.Text.Length > 0)
+            {
+                string selectedText = selectedRange.Text;
+                string[] lines = selectedText.Split(new[] { "\r\n" }, StringSplitOptions.None);
+
+                bool allLinesNumbered = lines.All(line => IsLineNumbered(line));
+                bool anyLinesNumbered = lines.Any(line => IsLineNumbered(line));
+
+                if (allLinesNumbered)
+                {
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        lines[i] = RemoveNumbering(lines[i]);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        if (anyLinesNumbered)
+                        {
+                            lines[i] = RemoveNumbering(lines[i]);
+                        }
+                        lines[i] = (i + 1).ToString() + ". " + lines[i];
+                    }
+                }
+
+                string updatedText = String.Join("\r\n", lines);
+                selectedRange.Text = updatedText;
+
+                UpdateFollowingLinesNumbering();
+
+                richTextBox.Selection.Select(selectedRange.Start, selectedRange.Start);
+            }
+        }
+
+
+        //private void numberedList_Click(object sender, RoutedEventArgs e)
+        //{ 
+
+        //}
+
+        //private void BulletList_Click(object sender, RoutedEventArgs e)
+        //{
+        //    ApplyToList(listType: TextMarkerStyle.Disc);
+        //}
+
+        //private void NumberedList_Click(object sender, RoutedEventArgs e)
+        //{
+        //    ApplyToList(listType: TextMarkerStyle.Decimal);
+        //}
+
+        //private void markerBullet_Click(object sender, RoutedEventArgs e)
+        //{
+        //    string bulletSymbol = Interaction.InputBox("Enter bullet symbol:", "Bullet Symbol", "•");
+
+        //    if (!string.IsNullOrEmpty(bulletSymbol))
+        //    {
+        //        TextSelection selectedText = richTextBox.Selection;
+
+        //        if (!selectedText.IsEmpty)
+        //        {
+        //            string[] lines = selectedText.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+        //            // Перевіряємо, чи вже проставлено маркер
+        //            bool hasBullet = lines.Any(line => line.StartsWith(bulletSymbol));
+
+        //            // Очищуємо вміст виділеного тексту
+        //            selectedText.Text = string.Empty;
+
+        //            // Вирішуємо, чи додавати чи прибирати маркер
+        //            foreach (string line in lines)
+        //            {
+        //                if (hasBullet)
+        //                {
+        //                    // Видаляємо маркер, якщо він вже існує
+        //                    selectedText.Text += line.TrimStart(bulletSymbol.ToCharArray()) + Environment.NewLine;
+        //                }
+        //                else
+        //                {
+        //                    // Додаємо маркер, якщо його немає
+        //                    selectedText.Text += bulletSymbol + " " + line + Environment.NewLine;
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            try
+        //            {    // Якщо текст не вибрано, додаємо або прибираємо маркер на початок нового абзацу
+        //                Paragraph paragraph = richTextBox.Document.Blocks.LastBlock as Paragraph;
+        //            if (paragraph != null)
+        //            {
+        //                string paragraphText = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text;
+        //                bool hasBullet = paragraphText.TrimStart().StartsWith(bulletSymbol);
+
+        //                if (hasBullet)
+        //                {
+        //                    paragraph.Inlines.Clear();
+        //                    paragraph.Inlines.Add(new Run(paragraphText.TrimStart(bulletSymbol.ToCharArray())));
+        //                }
+        //                else
+        //                {
+        //                    paragraph.Inlines.InsertBefore(paragraph.Inlines.FirstInline, new Run(bulletSymbol + " "));
+        //                }
+        //            }
+        //            else
+        //            {
+        //                paragraph = new Paragraph(new Run(bulletSymbol + " "));
+        //                richTextBox.Document.Blocks.Add(paragraph);
+        //            }
+        //            }
+        //            catch (ArgumentNullException ex)
+        //            {
+        //                Console.WriteLine($"ArgumentNullException: {ex.Message}");
+        //                Console.WriteLine($"Parameter name: {ex.ParamName}");
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Console.WriteLine($"Unexpected error: {ex.Message}");
+        //            }
+        //        }
+        //    }
+        //}
+
+
+
+        //private void markerButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    TextRange selectedRange = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
+
+        //    if (selectedRange.Text.Length > 0)
+        //    {
+        //        string selectedText = selectedRange.Text;
+        //        string[] lines = selectedText.Split(new[] { "\r\n" }, StringSplitOptions.None);
+
+        //        //Якщо всі рядки номеровані видаляємо
+        //        bool allLinesNumbered = lines.All(line => IsLineNumbered(line));
+
+        //        //Якщо хоч один рядок номерований,заново номеруємо
+        //        bool anyLinesNumbered = lines.Any(line => IsLineNumbered(line));
+
+        //        if (allLinesNumbered)
+        //        {
+        //            // Видаляємо нумерацію з усіх рядків
+        //            for (int i = 0; i < lines.Length; i++)
+        //            {
+        //                lines[i] = RemoveNumbering(lines[i]);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Додаємо або оновлюємо нумерацію
+        //            for (int i = 0; i < lines.Length; i++)
+        //            {
+        //                if (anyLinesNumbered)
+        //                {
+        //                    // Видаляємо існуючу нумерацію, якщо вона є
+        //                    lines[i] = RemoveNumbering(lines[i]);
+        //                }
+        //                lines[i] = (i + 1).ToString() + ". " + lines[i];
+        //            }
+        //        }
+
+        //        string updatedText = String.Join("\r\n", lines);
+        //        selectedRange.Text = updatedText;
+
+        //        // Оновлюємо нумерацію наступних рядків
+        //        UpdateFollowingLinesNumbering();
+
+        //        richTextBox.Selection.Select(selectedRange.Start, selectedRange.Start);
+        //    }
+        //}
+
+        private bool IsLineNumbered(string line)
+        {
+            return line.Length > 2 && Char.IsDigit(line[0]) && line[1] == '.';
+        }
+
+        private string RemoveNumbering(string line)
+        {
+            int firstSpaceIndex = line.IndexOf(' ');
+            return firstSpaceIndex != -1 ? line.Substring(firstSpaceIndex + 1) : line;
+        }
+
+        private void UpdateFollowingLinesNumbering()
+        {
+            TextRange afterRange = new TextRange(richTextBox.Selection.End, richTextBox.Document.ContentEnd);
+            string[] afterLines = afterRange.Text.Split(new[] { "\r\n" }, StringSplitOptions.None);
+
+            bool numberingExistsInAfterLines = afterLines.Length > 0 && afterLines[0].Length > 2 && afterLines[0][1] == '.';
+
+            if (numberingExistsInAfterLines)
+            {
+                for (int i = 0; i < afterLines.Length; i++)
+                {
+                    if (afterLines[i].Length > 2 && afterLines[i][1] == '.' && Char.IsDigit(afterLines[i][0]))
+                    {
+                        afterLines[i] = (i + 1).ToString() + ". " + afterLines[i].Substring(afterLines[i].IndexOf(' ') + 1);
+                    }
+                }
+
+                string updatedAfterText = String.Join("\r\n", afterLines);
+                afterRange.Text = updatedAfterText;
+            }
+        }
+
     }
 }

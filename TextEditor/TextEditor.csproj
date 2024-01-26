@@ -22,6 +22,10 @@
     <None Remove="icons8-help-64.png" />
     <None Remove="icons8-image-64.png" />
     <None Remove="icons8-loupe-32.png" />
+    <None Remove="icons8-new-file-64.png" />
+    <None Remove="icons8-numeric-50.png" />
+    <None Remove="icons8-open-file.png" />
+    <None Remove="icons8-save-50.png" />
     <None Remove="icons8-save-as-64.png" />
     <None Remove="icons8-settings-50.png" />
     <None Remove="icons8-share-50.png" />
@@ -44,6 +48,10 @@
     <Resource Include="icons8-help-64.png" />
     <Resource Include="icons8-image-64.png" />
     <Resource Include="icons8-loupe-32.png" />
+    <Resource Include="icons8-new-file-64.png" />
+    <Resource Include="icons8-numeric-50.png" />
+    <Resource Include="icons8-open-file.png" />
+    <Resource Include="icons8-save-50.png" />
     <Resource Include="icons8-save-as-64.png" />
     <Resource Include="icons8-settings-50.png" />
     <Resource Include="icons8-share-50.png" />
