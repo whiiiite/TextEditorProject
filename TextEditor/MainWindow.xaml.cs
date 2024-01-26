@@ -34,6 +34,8 @@ namespace TextEditor
         private bool isDirty = false;
         private List<TextRange> highlightedRanges = new List<TextRange>();
         int searchStatus = 0;
+        private Stack<string> undoStack = new Stack<string>();
+        private Stack<string> redoStack = new Stack<string>();
 
         private void MarkAsDirty()
         {
@@ -726,6 +728,8 @@ namespace TextEditor
 
         private void RichTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            SaveState();
+            MarkAsDirty();
             // Перевірка, чи текст виходить за межі поточного RichTextBox
             if (currentRichTextBox != null && currentRichTextBox.Document.Blocks.FirstBlock != null)
             {
@@ -739,39 +743,70 @@ namespace TextEditor
             }
         }
 
+        private void SaveState()
+        {
+            // Зберегти поточний текстовий стан
+            TextRange textRange = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
+            undoStack.Push(textRange.Text);
 
-        //private void ApplyToList(TextMarkerStyle listType)
-        //{
-        //    List list = new List();
-        //    list.MarkerStyle = listType;
+            // Очистіть стек відновлення, оскільки нова зміна тексту знімає можливість відновлення попередніх дій
+            redoStack.Clear();
+        }
+        private void ChangeCase_Click(object sender, RoutedEventArgs e)
+        {
+            if (!richTextBox.Selection.IsEmpty)
+            {
+                string selectedText = richTextBox.Selection.Text;
 
-        //    TextPointer insertionPosition;
+                // Перевірте поточний регістр та застосуйте протилежний
+                if (selectedText == selectedText.ToLower())
+                {
+                    richTextBox.Selection.Text = selectedText.ToUpper();
+                }
+                else
+                {
+                    richTextBox.Selection.Text = selectedText.ToLower();
+                }
+            }
+        }
+        private void Undo_Click(object sender, RoutedEventArgs e)
+        {
+            if (undoStack.Count > 0)
+            {
+                // Відмінити: зберегти поточний стан перед відміною
+                SaveState();
 
-        //    if (richTextBox.Selection.IsEmpty)
-        //    {
-        //        Paragraph paragraph = new Paragraph();
-        //        paragraph.Margin = new Thickness(0);
-        //        paragraph.Inlines.Add(list.ToString());
-        //        richTextBox.CaretPosition.Paragraph.SiblingBlocks.Add(paragraph);
-        //        insertionPosition = paragraph.ContentEnd;
-        //    }
-        //    else
-        //    {
-        //        richTextBox.Selection.ApplyPropertyValue(Inline.FontWeightProperty, FontWeights.Bold);
-        //        richTextBox.Selection.ApplyPropertyValue(Inline.FontStyleProperty, FontStyles.Italic);
-        //        richTextBox.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
-        //        richTextBox.Selection.ApplyPropertyValue(Inline.ForegroundProperty, null);
-        //        richTextBox.Selection.ApplyPropertyValue(Inline.BackgroundProperty, null);
+                // Відновити попередній стан
+                string previousState = undoStack.Pop();
+                SetText(previousState);
 
-        //        Paragraph paragraph = new Paragraph();
-        //        paragraph.Margin = new Thickness(0);
-        //        paragraph.Inlines.Add(list.ToString());
-        //        richTextBox.Selection.Start.Paragraph.SiblingBlocks.Add(paragraph);
-        //        insertionPosition = paragraph.ContentEnd;
-        //    }
+                // Додайте поточний стан до стеку відновлення
+                redoStack.Push(previousState);
+            }
+        }
 
-        //    richTextBox.CaretPosition = insertionPosition;
-        //}
+        private void Redo_Click(object sender, RoutedEventArgs e)
+        {
+            if (redoStack.Count > 0)
+            {
+                // Відновити: зберегти поточний стан перед відновленням
+                SaveState();
+
+                // Відновити наступний стан
+                string nextState = redoStack.Pop();
+                SetText(nextState);
+
+                // Додайте поточний стан до стеку відміни
+                undoStack.Push(nextState);
+            }
+        }
+
+        private void SetText(string text)
+        {
+            // Встановити текстовий зміст
+            richTextBox.Document.Blocks.Clear();
+            richTextBox.Document.Blocks.Add(new Paragraph(new Run(text)));
+        }
 
         private void alignLeft_Click(object sender, RoutedEventArgs e)
         {
@@ -919,6 +954,7 @@ namespace TextEditor
         {
             ApplyToList(listType: TextMarkerStyle.Decimal);
         }
+
         private void ApplyToList(TextMarkerStyle listType)
         {
             string bulletSymbol = listType == TextMarkerStyle.Disc ? "•" : "1";
@@ -1023,70 +1059,6 @@ namespace TextEditor
             return null;
         }
 
-        //private void ApplyToList(TextMarkerStyle listType)
-        //{
-        //    string bulletSymbol = listType == TextMarkerStyle.Disc ? "•" : "1";
-
-        //    TextSelection selectedText = richTextBox.Selection;
-
-        //    if (!selectedText.IsEmpty)
-        //    {
-        //        string[] lines = selectedText.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-        //        bool hasBullet = lines.Any(line => line.TrimStart().StartsWith(bulletSymbol));
-
-        //        selectedText.Text = string.Empty;
-
-        //        foreach (string line in lines)
-        //        {
-        //            if (hasBullet)
-        //            {
-        //                selectedText.Text += line.TrimStart(bulletSymbol.ToCharArray()) + Environment.NewLine;
-        //            }
-        //            else
-        //            {
-        //                selectedText.Text += bulletSymbol + " " + line + Environment.NewLine;
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        try
-        //        {
-        //            Paragraph paragraph = richTextBox.Document.Blocks.LastBlock as Paragraph;
-
-        //            if (paragraph != null)
-        //            {
-        //                string paragraphText = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text;
-        //                bool hasBullet = paragraphText.TrimStart().StartsWith(bulletSymbol);
-
-        //                if (hasBullet)
-        //                {
-        //                    paragraph.Inlines.Clear();
-        //                    paragraph.Inlines.Add(new Run(paragraphText.TrimStart(bulletSymbol.ToCharArray())));
-        //                }
-        //                else
-        //                {
-        //                    paragraph.Inlines.InsertBefore(paragraph.Inlines.FirstInline, new Run(bulletSymbol + " "));
-        //                }
-        //            }
-        //            else
-        //            {
-        //                paragraph = new Paragraph(new Run(bulletSymbol + " "));
-        //                richTextBox.Document.Blocks.Add(paragraph);
-        //            }
-        //        }
-        //        catch (ArgumentNullException ex)
-        //        {
-        //            Console.WriteLine($"ArgumentNullException: {ex.Message}");
-        //            Console.WriteLine($"Parameter name: {ex.ParamName}");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine($"Unexpected error: {ex.Message}");
-        //        }
-        //    }
-        //}
 
         private void markerButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1129,141 +1101,6 @@ namespace TextEditor
         }
 
 
-        //private void numberedList_Click(object sender, RoutedEventArgs e)
-        //{ 
-
-        //}
-
-        //private void BulletList_Click(object sender, RoutedEventArgs e)
-        //{
-        //    ApplyToList(listType: TextMarkerStyle.Disc);
-        //}
-
-        //private void NumberedList_Click(object sender, RoutedEventArgs e)
-        //{
-        //    ApplyToList(listType: TextMarkerStyle.Decimal);
-        //}
-
-        //private void markerBullet_Click(object sender, RoutedEventArgs e)
-        //{
-        //    string bulletSymbol = Interaction.InputBox("Enter bullet symbol:", "Bullet Symbol", "•");
-
-        //    if (!string.IsNullOrEmpty(bulletSymbol))
-        //    {
-        //        TextSelection selectedText = richTextBox.Selection;
-
-        //        if (!selectedText.IsEmpty)
-        //        {
-        //            string[] lines = selectedText.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-        //            // Перевіряємо, чи вже проставлено маркер
-        //            bool hasBullet = lines.Any(line => line.StartsWith(bulletSymbol));
-
-        //            // Очищуємо вміст виділеного тексту
-        //            selectedText.Text = string.Empty;
-
-        //            // Вирішуємо, чи додавати чи прибирати маркер
-        //            foreach (string line in lines)
-        //            {
-        //                if (hasBullet)
-        //                {
-        //                    // Видаляємо маркер, якщо він вже існує
-        //                    selectedText.Text += line.TrimStart(bulletSymbol.ToCharArray()) + Environment.NewLine;
-        //                }
-        //                else
-        //                {
-        //                    // Додаємо маркер, якщо його немає
-        //                    selectedText.Text += bulletSymbol + " " + line + Environment.NewLine;
-        //                }
-        //            }
-        //        }
-        //        else
-        //        {
-        //            try
-        //            {    // Якщо текст не вибрано, додаємо або прибираємо маркер на початок нового абзацу
-        //                Paragraph paragraph = richTextBox.Document.Blocks.LastBlock as Paragraph;
-        //            if (paragraph != null)
-        //            {
-        //                string paragraphText = new TextRange(paragraph.ContentStart, paragraph.ContentEnd).Text;
-        //                bool hasBullet = paragraphText.TrimStart().StartsWith(bulletSymbol);
-
-        //                if (hasBullet)
-        //                {
-        //                    paragraph.Inlines.Clear();
-        //                    paragraph.Inlines.Add(new Run(paragraphText.TrimStart(bulletSymbol.ToCharArray())));
-        //                }
-        //                else
-        //                {
-        //                    paragraph.Inlines.InsertBefore(paragraph.Inlines.FirstInline, new Run(bulletSymbol + " "));
-        //                }
-        //            }
-        //            else
-        //            {
-        //                paragraph = new Paragraph(new Run(bulletSymbol + " "));
-        //                richTextBox.Document.Blocks.Add(paragraph);
-        //            }
-        //            }
-        //            catch (ArgumentNullException ex)
-        //            {
-        //                Console.WriteLine($"ArgumentNullException: {ex.Message}");
-        //                Console.WriteLine($"Parameter name: {ex.ParamName}");
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                Console.WriteLine($"Unexpected error: {ex.Message}");
-        //            }
-        //        }
-        //    }
-        //}
-
-
-
-        //private void markerButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    TextRange selectedRange = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
-
-        //    if (selectedRange.Text.Length > 0)
-        //    {
-        //        string selectedText = selectedRange.Text;
-        //        string[] lines = selectedText.Split(new[] { "\r\n" }, StringSplitOptions.None);
-
-        //        //Якщо всі рядки номеровані видаляємо
-        //        bool allLinesNumbered = lines.All(line => IsLineNumbered(line));
-
-        //        //Якщо хоч один рядок номерований,заново номеруємо
-        //        bool anyLinesNumbered = lines.Any(line => IsLineNumbered(line));
-
-        //        if (allLinesNumbered)
-        //        {
-        //            // Видаляємо нумерацію з усіх рядків
-        //            for (int i = 0; i < lines.Length; i++)
-        //            {
-        //                lines[i] = RemoveNumbering(lines[i]);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            // Додаємо або оновлюємо нумерацію
-        //            for (int i = 0; i < lines.Length; i++)
-        //            {
-        //                if (anyLinesNumbered)
-        //                {
-        //                    // Видаляємо існуючу нумерацію, якщо вона є
-        //                    lines[i] = RemoveNumbering(lines[i]);
-        //                }
-        //                lines[i] = (i + 1).ToString() + ". " + lines[i];
-        //            }
-        //        }
-
-        //        string updatedText = String.Join("\r\n", lines);
-        //        selectedRange.Text = updatedText;
-
-        //        // Оновлюємо нумерацію наступних рядків
-        //        UpdateFollowingLinesNumbering();
-
-        //        richTextBox.Selection.Select(selectedRange.Start, selectedRange.Start);
-        //    }
-        //}
 
         private bool IsLineNumbered(string line)
         {

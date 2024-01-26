@@ -29,7 +29,8 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="22"/>
         </Grid.RowDefinitions>
-        <Menu>
+        <StackPanel Orientation="Horizontal">
+            <Menu >
             <Menu.Resources>
                 <Style TargetType="MenuItem">
                     <Setter Property="Margin" Value="5"/>
@@ -60,6 +61,16 @@
                 <MenuItem Header="Exit" Click="Exit_Click"/>
             </MenuItem>
             <MenuItem Header="Edit">
+                <MenuItem Header="Undo" Command="ApplicationCommands.Undo">
+                    <MenuItem.Icon>
+                        <Image Source="/icons8-undo-48.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Redo" Command="ApplicationCommands.Redo">
+                    <MenuItem.Icon>
+                        <Image Source="/icons8-redo-48.png"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Find" Click="searchButton_Click">
                     <MenuItem.Icon>
                         <Image Source="/icons8-view-64.png"/>
@@ -90,7 +101,33 @@
                     </MenuItem>
                 </MenuItem>
             </MenuItem>
+
         </Menu>
+            <ToolBar Grid.Row="0" VerticalAlignment="Top">
+                <Button x:Name="undoButton" Command="ApplicationCommands.Undo" Margin="1,1,1,0"  VerticalAlignment="Center" Width="20" Height="20" Style="{StaticResource IconButtonStyle}">
+                    <ContentControl>
+                        <ContentControl.Content>
+                            <Image Source="/icons8-undo-48.png" Stretch="Fill"/>
+                        </ContentControl.Content>
+                    </ContentControl>
+                    <Button.ToolTip>
+                        <ToolTip Content="Undo" />
+                    </Button.ToolTip>
+                
+                </Button>
+                <Button x:Name="redoButton" Command="ApplicationCommands.Redo" Margin="1,1,1,0"  VerticalAlignment="Center" Width="20" Height="20" Style="{StaticResource IconButtonStyle}">
+                        <ContentControl>
+                            <ContentControl.Content>
+                                <Image Source="/icons8-redo-48.png" Stretch="Fill"/>
+                            </ContentControl.Content>
+                        </ContentControl>
+                        <Button.ToolTip>
+                            <ToolTip Content="Redo" />
+                        </Button.ToolTip>
+                </Button>
+
+            </ToolBar>
+        </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <Grid x:Name="newSave" Width="26" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
@@ -231,6 +268,33 @@
                 <TextBlock Text="U" TextDecorations="Underline"/>
             </Button>
             <Border Width="1" Background="DarkGray" Margin="0,0"/>
+            <Grid x:Name="UpperLowerText" Width="26" RenderTransformOrigin="0.5,0.5" Height="50">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button x:Name="caseButton" Margin="1,1,1,0"  VerticalAlignment="Center" Width="20" Height="20" Click="ChangeCase_Click" Style="{StaticResource IconButtonStyle}">
+                    <ContentControl>
+                        <ContentControl.Content>
+                            <Image Source="/icons8-font-size-50.png" Stretch="Fill"/>
+                        </ContentControl.Content>
+                    </ContentControl>
+                    <Button.ToolTip>
+                        <ToolTip Content="Upper/Lower" />
+                    </Button.ToolTip>
+                </Button>
+                <!--<Button x:Name="maButton" Grid.Row="1" Margin="1,1,1,2" VerticalAlignment="Top" Width="20" Height="20" Click="markerButton_Click" Style="{StaticResource IconButtonStyle}">
+                    <ContentControl>
+                        <ContentControl.Content>
+                            <Image Source="/icons8-numeric-50.png"/>
+                        </ContentControl.Content>
+                    </ContentControl>
+                    <Button.ToolTip>
+                        <ToolTip Content="Num list" />
+                    </Button.ToolTip>
+                </Button>-->
+
+            </Grid>
             <Grid x:Name="searchText" Width="26" RenderTransformOrigin="0.5,0.5" Height="50">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
