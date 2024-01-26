@@ -13,6 +13,8 @@ using System.Windows.Threading;
 using FontFamily = System.Windows.Media.FontFamily;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Reflection;
 
 namespace TextEditor
 {
